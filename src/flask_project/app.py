@@ -4,6 +4,7 @@ from bson import ObjectId  # To convert ObjectId to string for JSON serializatio
 from flask_cors import CORS
 from faker import Faker
 import random
+from bson import ObjectId, errors
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"])
@@ -36,6 +37,10 @@ medications = [
     "inhalers", "pain relievers", "antibiotics", "blood thinners", "chemotherapy"
 ]
 
+users = {
+    "admin": "password"
+}
+
 def generate_medical_history():
     history = []
     num_conditions = random.randint(1, 3)  # Randomly pick 1-3 conditions
@@ -51,6 +56,7 @@ def generate_medical_history():
     
     # Join all medical history sentences into a single string
     return " ".join(history)
+
 # Generate random data and insert into MongoDB
 @app.route('/api/insert-random-data', methods=['GET'])
 def insert_random_data():
@@ -93,16 +99,31 @@ def patient_data(patient):
         'gender': patient['gender'],
         'disease': patient['disease'],
         'admission_date': patient['admission_date'],
-        'medical_history': patient['medical_history']
+        "medicalHistory": patient.get("medicalHistory", "No history available")
     }
 
 # Helper function to fetch a patient by id
+@app.route("/patient/<id>", methods=["GET"])
 def get_patient_by_id(id):
-    patient = patients_collection.find_one({'_id': ObjectId(id)})
-    if patient:
-        return patient_data(patient)
-    return None
-
+    try:
+        if not ObjectId.is_valid(id):  # Validate the ObjectId format
+            return jsonify({"error": "Invalid Patient ID"}), 400
+        
+        patient = patients_collection.find_one({"_id": ObjectId(id)})
+        
+        return jsonify({
+            "name": patient.get("name"),
+            "age": patient.get("age"),
+            "disease": patient.get("disease"),
+            "admission_date": patient.get("admission_date"),
+            "medical_history": patient.get("medical_history", "No additional history available")  # Ensure key exists
+        })
+    
+    except errors.InvalidId:
+        return jsonify({"error": "Invalid ObjectId format"}), 400
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Fetch all patients
 @app.route('/patients', methods=['GET'])
@@ -110,16 +131,19 @@ def get_patients():
     patients = patients_collection.find()
     return jsonify([patient_data(patient) for patient in patients])
 
+#edit data for patient
 @app.route('/patients/<id>', methods=['GET'])
 def get_patient(id):
     try:
-        patient = get_patient_by_id(id)  # Fetch the patient using the updated function
+        patient = patients_collection.find_one({"_id": ObjectId(id)})  # Fetch the patient using the updated function
         if patient:
             return jsonify(patient)
         else:
             return jsonify({'message': 'Patient not found'}), 404
     except Exception as e:
         return jsonify({'message': f'Error fetching patient: {str(e)}'}), 500
+    except errors.InvalidId:
+        return jsonify({"error": "Invalid ObjectId format"}), 400
 
 
 # Add a new patient
@@ -153,8 +177,6 @@ def delete_patient(id):
     if result.deleted_count == 0:
         return jsonify({'message': 'Patient not found'}), 404
     return jsonify({'message': 'Patient deleted successfully'})
-
-from bson import ObjectId  # Ensure this import is included to handle ObjectId
 
 @app.route('/patients/<id>', methods=['PUT'])  # Make sure id is treated as a string in the URL
 def update_patient(id):
@@ -219,6 +241,21 @@ def map_reduce_query():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+ 
+
+@app.route("/token", methods=["POST"])
+def login():
+    username = request.form.get("username")
+    password = request.form.get("password")
+
+    if not username or not password:
+        return jsonify({"error": "Missing username or password"}), 400  # Bad Request
+
+    if username in users and users[username] == password:
+        return jsonify({"access_token": "fake-jwt-token"}), 200
+
+    return jsonify({"error": "Invalid credentials"}), 401  # Unauthorized
 
 
 if __name__ == '__main__':

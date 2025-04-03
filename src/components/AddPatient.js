@@ -12,6 +12,7 @@ function AddPatient() {
 
   
   const navigate = useNavigate();
+  const [message, setMessage] = useState(""); // State for success message
 
   // Handle form submission
   const handleSubmit = (e) => {
@@ -40,7 +41,11 @@ function AddPatient() {
       }
     })
     .then(() => {
-      navigate('/'); // Redirect to the main dashboard after adding the patient
+      setMessage("✅ Patient added successfully!");  // Set success message
+      setTimeout(() => {
+        setMessage("");  // Clear message after 3 seconds
+        navigate('/');   // Redirect after showing message
+      }, 9000);
     })
     .catch((error) => {
       console.error("There was an error adding the patient:", error);
@@ -121,6 +126,8 @@ const handleMedicalHistoryChange = (e) => {
         />
         
         <button type="submit">Add Patient</button>
+        {message && <p style={{ color: "green", fontWeight: "bold" }}>{message}</p>}
+
       </form>
     </div>
   );

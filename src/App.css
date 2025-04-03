@@ -15,11 +15,11 @@
 
 .App-header {
   background-color: #9fcdcf;
-  min-height: 1vh;
+  min-height:2%;
   display: grid;
   align-items: center;
   justify-content: center;
-  font-size: calc(8px + 2vmin);
+  font-size: calc(3px + 2vmin);
   color: rgb(11, 3, 3);
 }
 

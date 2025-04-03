@@ -6,6 +6,7 @@ function EditPatient() {
   const [patient, setPatient] = useState(null);
   const { id } = useParams();  // Get the patient id from the URL
   const navigate = useNavigate();
+  const [message, setMessage] = useState(""); // State for success message
 
   useEffect(() => {
     // Fetch patient data based on the patient id from the URL
@@ -28,7 +29,11 @@ function EditPatient() {
         // Add any authentication tokens if necessary
       }
     })
-    .then(() => navigate('/'))
+    .then(() => { setMessage("✅ Patient data updated successfully!");  // Set success message
+      setTimeout(() => {
+        setMessage("");  // Clear message after few seconds
+        navigate('/');   // Redirect after showing message
+      }, 9000);})
     .catch(error => console.error("Error updating patient:", error));
   };
 
@@ -65,10 +70,15 @@ function EditPatient() {
         <label>Medical History (Comma Separated):</label>
         <input  type="text" 
                 name="medical_history" 
-                value={patient.medical_history.join(',')} 
-                onChange={(e) => handleChange({ target: { name: 'medical_history', value: e.target.value.split(',') } })} />
+                value={Array.isArray(patient.medical_history)?patient.medical_history.join(','):" "} 
+                onChange={(e) => 
+                  handleChange({ 
+                    target: { 
+                      name: 'medical_history', 
+                      value: e.target.value.split(',') } })} />
         
         <button type="submit">Update Patient</button>
+        {message && <p style={{ color: "green", fontWeight: "bold" }}>{message}</p>}
       </form>
     </div>
   );

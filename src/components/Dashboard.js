@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 
 function Dashboard() {
   const [patients, setPatients] = useState([]);
@@ -9,6 +9,7 @@ function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [availableDiseases, setAvailableDiseases] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]); // State for filtered patients
+  const [deletedPatient, setDeletedPatient] = useState(null);
 
   // Define categories and their diseases
   const diseaseCategories = {
@@ -21,10 +22,12 @@ function Dashboard() {
     Kidney: ["Chronic Kidney Disease"],
     Musculoskeletal: ["Osteoarthritis"]
   };
-
+  const navigate = useNavigate();
   // Fetch patient data from the backend
   useEffect(() => {
-    axios.get('http://127.0.0.1:5000/patients')  // Flask server URL
+    axios.get('http://127.0.0.1:5000/patients', {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    })
       .then(response => setPatients(response.data))
       .catch(error => console.log(error));
   }, []);
@@ -44,13 +47,33 @@ function Dashboard() {
     }
   }, [selectedCategory]);
 
-  // Delete patient record
-  const deletePatient = (id) => {
-    axios.delete(`http://127.0.0.1:5000/patients/${id}`)
-      .then(() => {
-        setPatients(patients.filter(patient => patient._id !== id));
-      })
-      .catch(error => console.log(error));
+
+  const fetchPatients = () => {
+    axios.get("http://127.0.0.1:5000/patients")
+      .then(response => setPatients(response.data))
+      .catch(error => console.error("Error fetching patients:", error));
+  };
+  useEffect(() => {
+    applyFilters(); // Reapply filters when patients change
+  }, [patients]);
+  
+  const deletePatient = async (id) => {
+    try {
+      const patientToDelete = patients.find((patient) => patient._id === id);
+  
+      await axios.delete(`http://127.0.0.1:5000/patients/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+  
+      setDeletedPatient(patientToDelete);
+      setTimeout(() => setDeletedPatient(null), 5000);
+  
+      setPatients((prevPatients) => prevPatients.filter(patient => patient._id !== id));
+      setFilteredPatients((prevFiltered) => prevFiltered.filter(patient => patient._id !== id));
+  
+    } catch (error) {
+      console.error("Error deleting patient:", error);
+    }
   };
 
   // Handle filter changes
@@ -66,10 +89,15 @@ function Dashboard() {
     setFilteredPatients(newFilteredPatients);  // Set filtered patients
   };
 
+    // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Remove token from storage
+    navigate("/login"); // Redirect to login page
+  };
+  
   return (
     <div>
       <h1>Patient Dashboard</h1>
-
       {/* Filters */}
       <div class="categorydiv">
         {/* Category Dropdown */}
@@ -108,10 +136,16 @@ function Dashboard() {
 
       {/* Display Button */}
       <button onClick={applyFilters}>Display</button>
-    
+      {/* Logout Button */}
+      <button onClick={handleLogout} style={{ position:'absolute' ,float: "right", margin: "10px",top:"20px",right:"20px" }}>Logout</button>
             
       {/* Add New Patient Button */}
       <Link to="/add"><button>Add New Patient</button></Link>
+      {deletedPatient && (
+                <div style={{ color: "red", fontWeight: "bold", textAlign:'center'}}>
+                    🗑️ Patient <strong>{deletedPatient.name}</strong> was deleted.
+                </div>
+                  )}
 
       {/* Patient List Table */}
       <table class="displaytabulardata">
@@ -121,6 +155,7 @@ function Dashboard() {
             <th>Age</th>
             <th>Disease</th>
             <th>Admission Date</th>
+            <th>Medical History</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -131,6 +166,11 @@ function Dashboard() {
               <td>{patient.age}</td>
               <td>{patient.disease}</td>
               <td>{new Date(patient.admission_date).toLocaleDateString()}</td>
+              <td>
+              <Link to={`/patient/${patient._id}`}>
+                <button>View History</button>
+              </Link>
+              </td>
               <td>
                 <Link to={`/edit/${patient._id}`}>
                   <button>Edit</button>
