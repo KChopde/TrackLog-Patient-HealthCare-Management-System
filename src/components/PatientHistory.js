@@ -11,7 +11,7 @@ function PatientHistory() {
 
   useEffect(() => {
     if (id && id.length === 24) {  // Ensure valid MongoDB ObjectId length
-      axios.get(`http://127.0.0.1:5000/patient/${id}`)
+      axios.get(`/patient/${id}`)
         .then(response => {
           setPatient(response.data);  // ✅ Set state with patient data
           setLoading(false);

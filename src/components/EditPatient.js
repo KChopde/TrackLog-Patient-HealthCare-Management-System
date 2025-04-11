@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import api from './Api';
 
 function EditPatient() {
   const [patient, setPatient] = useState(null);
@@ -10,7 +11,7 @@ function EditPatient() {
 
   useEffect(() => {
     // Fetch patient data based on the patient id from the URL
-    axios.get(`http://localhost:5000/patients/${id}`)
+    api.get(`/patients/${id}`)
       .then(response => {
         setPatient(response.data);  // Update state with the fetched patient data
       })
@@ -23,7 +24,7 @@ function EditPatient() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios.put(`http://localhost:5000/patients/${id}`, patient, {
+    api.put(`/patients/${id}`, patient, {
       headers: {
         'Content-Type': 'application/json',
         // Add any authentication tokens if necessary

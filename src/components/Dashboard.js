@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate} from 'react-router-dom';
+import api from './Api';
 
 function Dashboard() {
   const [patients, setPatients] = useState([]);
@@ -25,7 +26,7 @@ function Dashboard() {
   const navigate = useNavigate();
   // Fetch patient data from the backend
   useEffect(() => {
-    axios.get('http://127.0.0.1:5000/patients', {
+    api.get('/patients', {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
     })
       .then(response => setPatients(response.data))
@@ -49,7 +50,7 @@ function Dashboard() {
 
 
   const fetchPatients = () => {
-    axios.get("http://127.0.0.1:5000/patients")
+    api.get("/patients")
       .then(response => setPatients(response.data))
       .catch(error => console.error("Error fetching patients:", error));
   };
@@ -61,7 +62,7 @@ function Dashboard() {
     try {
       const patientToDelete = patients.find((patient) => patient._id === id);
   
-      await axios.delete(`http://127.0.0.1:5000/patients/${id}`, {
+      await api.delete(`patients/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
   

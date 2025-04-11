@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import api from './Api';
 
 function AddPatient() {
   const [name, setName] = useState('');
@@ -35,7 +36,7 @@ function AddPatient() {
     };
 
     // Send data to backend via POST
-    axios.post('http://localhost:5000/patients', newPatient, {
+    api.post('/patients', newPatient, {
       headers: {
         'Content-Type': 'application/json',
       }
@@ -45,7 +46,7 @@ function AddPatient() {
       setTimeout(() => {
         setMessage("");  // Clear message after 3 seconds
         navigate('/');   // Redirect after showing message
-      }, 9000);
+      }, 5000);
     })
     .catch((error) => {
       console.error("There was an error adding the patient:", error);

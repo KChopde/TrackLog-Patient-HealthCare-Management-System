@@ -5,13 +5,9 @@ from flask_cors import CORS
 from faker import Faker
 import random
 from bson import ObjectId, errors
-
 import os
 
-
-
 app = Flask(__name__)
-
 CORS(app, origins=["http://localhost:3000"])
 #CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
  # Enable CORS for frontend-backend communication

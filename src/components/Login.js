@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import api from './Api';
 
 
 const Login = ({ setToken }) => {
@@ -12,7 +13,7 @@ const Login = ({ setToken }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/token", new URLSearchParams({
+      const response = await api.post("/token", new URLSearchParams({
         username,
         password
       }), {

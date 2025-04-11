@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import api from './Api';
+
 
 const MapReduceQueryForm = () => {
   // State to manage the input fields
@@ -26,7 +28,7 @@ const MapReduceQueryForm = () => {
     setError(null);
     try {
       // Send request to backend to execute map-reduce query
-      const response = await axios.post('http://localhost:5000/api/map-reduce-query',{ disease, year });
+      const response = await api.post('/api/map-reduce-query',{ disease, year });
       setResult(response.data);
     } catch (err) {
       setError('An error occurred while fetching the data');
