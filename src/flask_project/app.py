@@ -6,10 +6,18 @@ from faker import Faker
 import random
 from bson import ObjectId, errors
 
+import os
+
+
+
 app = Flask(__name__)
+
 CORS(app, origins=["http://localhost:3000"])
 #CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
  # Enable CORS for frontend-backend communication
+
+PORT = int(os.environ.get("PORT", 5000))  # Render injects PORT env var
+app.run(host="0.0.0.0", port=PORT, debug=True)
 
 # MongoDB connection URI (localhost or MongoDB Atlas)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/healthcare_db"
