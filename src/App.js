@@ -22,14 +22,14 @@ function App() {
              
         </header>
 
-        <Routes>
+        <Router basename="/TrackLog-Patient-HealthCare-Management-System">
           <Route path="/login" element={<Login setToken={setToken} />} />
           <Route path="/" element={<PrivateRoute><Dashboard /> </PrivateRoute>}/>
           <Route path="/add" element={<PrivateRoute><AddPatient /></PrivateRoute>} />
           <Route path="/edit/:id" element={<PrivateRoute><EditPatient /></PrivateRoute>} />
           <Route path="/mapreduce" element={<PrivateRoute><MapReduceQuery /></PrivateRoute>} />
           <Route path="/patient/:id" element={<PatientHistory />} />
-        </Routes>
+        </Router>
       </div>
     </Router>
   );
