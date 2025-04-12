@@ -8,7 +8,7 @@ from bson import ObjectId, errors
 import os
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"])
+CORS(app, origins=["http://localhost:3000","https://kchopde.github.io"])
 #CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
  # Enable CORS for frontend-backend communication
 
