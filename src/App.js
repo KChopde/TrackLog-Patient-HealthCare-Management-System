@@ -15,14 +15,14 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
   return (
-    <Router>
+    <Router basename="/TrackLog-Patient-HealthCare-Management-System">
       <div className="App">
         <header className="App-header">
           <h1>TrackLog</h1><h2>Healthcare Patient Management System</h2>
              
         </header>
 
-        <Routes basename="/TrackLog-Patient-HealthCare-Management-System">
+        <Routes>
           <Route path="/login" element={<Login setToken={setToken} />} />
           <Route path="/" element={<PrivateRoute><Dashboard /> </PrivateRoute>}/>
           <Route path="/add" element={<PrivateRoute><AddPatient /></PrivateRoute>} />
