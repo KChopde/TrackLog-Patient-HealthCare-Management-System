@@ -23,7 +23,7 @@ function Login({ setToken }) {
       }
 
       setToken(access_token);
-      navigate('/');  // Navigate to the home page or dashboard
+      navigate('/login');  // Navigate to the home page or dashboard
     } catch (err) {
       setError("Invalid credentials. Please try again.");
     }
