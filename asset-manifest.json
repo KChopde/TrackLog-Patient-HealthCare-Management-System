@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/TrackLog-Patient-HealthCare-Management-System/static/css/main.86e2647b.css",
-    "main.js": "/TrackLog-Patient-HealthCare-Management-System/static/js/main.bc1b5516.js",
-    "static/js/488.25531b73.chunk.js": "/TrackLog-Patient-HealthCare-Management-System/static/js/488.25531b73.chunk.js",
-    "static/media/background.jpg": "/TrackLog-Patient-HealthCare-Management-System/static/media/background.e7f9498ebb83e5525dce.jpg",
-    "index.html": "/TrackLog-Patient-HealthCare-Management-System/index.html",
-    "main.86e2647b.css.map": "/TrackLog-Patient-HealthCare-Management-System/static/css/main.86e2647b.css.map",
-    "main.bc1b5516.js.map": "/TrackLog-Patient-HealthCare-Management-System/static/js/main.bc1b5516.js.map",
-    "488.25531b73.chunk.js.map": "/TrackLog-Patient-HealthCare-Management-System/static/js/488.25531b73.chunk.js.map"
+    "main.css": "/static/css/main.7fdd7d44.css",
+    "main.js": "/static/js/main.9902ad9f.js",
+    "static/js/488.25531b73.chunk.js": "/static/js/488.25531b73.chunk.js",
+    "static/media/background.jpg": "/static/media/background.e7f9498ebb83e5525dce.jpg",
+    "index.html": "/index.html",
+    "main.7fdd7d44.css.map": "/static/css/main.7fdd7d44.css.map",
+    "main.9902ad9f.js.map": "/static/js/main.9902ad9f.js.map",
+    "488.25531b73.chunk.js.map": "/static/js/488.25531b73.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.86e2647b.css",
-    "static/js/main.bc1b5516.js"
+    "static/css/main.7fdd7d44.css",
+    "static/js/main.9902ad9f.js"
   ]
 }
