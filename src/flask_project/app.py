@@ -17,7 +17,7 @@ CORS(app, origins=["http://localhost:3000","https://kchopde.github.io","*","http
  # Enable CORS for frontend-backend communication
 
 PORT = int(os.environ.get("PORT", 5000))  # Render injects PORT env var
-app.run(host="0.0.0.0", port=PORT, debug=True)
+#app.run(host="0.0.0.0", port=PORT, debug=True)
 
 # MongoDB connection URI (localhost or MongoDB Atlas)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/healthcare_db"
@@ -268,4 +268,4 @@ def map_reduce_query():
     
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=PORT,debug=True)
