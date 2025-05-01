@@ -6,23 +6,31 @@ from faker import Faker
 import random
 from bson import ObjectId, errors
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
+from auth import auth_bp
+
+
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000","https://kchopde.github.io"])
+CORS(app, origins=["http://localhost:3000","https://kchopde.github.io","*","http://localhost:3001", "http://localhost:*"])
 #CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
  # Enable CORS for frontend-backend communication
 
 PORT = int(os.environ.get("PORT", 5000))  # Render injects PORT env var
-app.run(host="0.0.0.0", port=PORT, debug=True)
+#app.run(host="0.0.0.0", port=PORT, debug=True)
 
 # MongoDB connection URI (localhost or MongoDB Atlas)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/healthcare_db"
+app.register_blueprint(auth_bp, url_prefix='/auth')
 
 mongo = PyMongo(app)
 fake = Faker()
 
 # Collection reference
 patients_collection = mongo.db.patients
+
+users_collection = mongo.db.users
+
 
 # List of medical conditions, diagnoses, and symptoms
 conditions = [
@@ -61,8 +69,12 @@ def generate_medical_history():
     # Join all medical history sentences into a single string
     return " ".join(history)
 
+@app.before_request
+def log_request():
+    print(f">>> {request.method} to {request.path}")
+
 # Generate random data and insert into MongoDB
-@app.route('/api/insert-random-data', methods=['GET'])
+@app.route('/api/insert-random-data', methods=['POST'])
 def insert_random_data():
     try:
         # Create random patient data
@@ -70,7 +82,7 @@ def insert_random_data():
         diseases = ["Heart Disease","Hypertension","Asthma", "COPD", "Pneumonia", "COVID-19","Alzheimer's Disease", 
                     "Parkinson's Disease","Type 1 Diabetes", "Type 2 Diabetes","Lung Cancer", "Breast Cancer",
                     "Depression", "Anxiety","Insomnia","Chronic Kidney Disease","Osteoarthritis"]
-        for _ in range(10):  # Insert 10 random patients
+        for _ in range(100000):  # Insert 100 random patients
             patient = {
                 "name": fake.name(),
                 "age": random.randint(20, 90),
@@ -203,64 +215,57 @@ def update_patient(id):
     except Exception as e:
         return jsonify({'message': f'Error updating patient: {str(e)}'}), 500
     
-@app.route('/api/map-reduce-query', methods=['POST'])
+@app.route('/api/map-reduce-query', methods=['GET'])
 def map_reduce_query():
     try:
-        data = request.json
-        disease = data.get("disease")
-        year = data.get("year")
+        disease = request.args.get("disease")
+        age = request.args.get("age")
+        gender = request.args.get("gender")
+        age = int(age)
+        
 
-        if not disease or not year:
+        if not disease or not age:
             return jsonify({"error": "Disease and year are required"}), 400
 
-        # Convert year to integer
-        year = int(year)
 
-        # Aggregation pipeline to replace MapReduce
+        # Aggregation pipeline
         pipeline = [
-            {
-                "$addFields": {
-                    "admissionYear": {"$toInt": {"$substr": ["$admission_date", 0, 4]}}
-                }
-            },
             {
                 "$match": {
                     "disease": disease,
-                    "admissionYear": year
+                    "age": {"$gte": age},
+                    "gender": gender
                 }
             },
             {
                 "$group": {
-                    "_id": "$disease",
+                    "_id": {
+                        "disease": "$disease",
+                        "gender": "$gender"
+                    },
                     "count": {"$sum": 1}
                 }
             }
         ]
 
         result = list(patients_collection.aggregate(pipeline))
+        output = [
+            {
+                "disease": doc["_id"]["disease"],
+                "gender": doc["_id"]["gender"],
+                "count": doc["count"]
+            }
+            for doc in result
+        ]
 
-        output = {doc["_id"]: doc["count"] for doc in result}
+        #output = {doc["_id"]: doc["count"] for doc in result}
 
         return jsonify(output)
+
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
- 
-
-@app.route("/token", methods=["POST"])
-def login():
-    username = request.form.get("username")
-    password = request.form.get("password")
-
-    if not username or not password:
-        return jsonify({"error": "Missing username or password"}), 400  # Bad Request
-
-    if username in users and users[username] == password:
-        return jsonify({"access_token": "fake-jwt-token"}), 200
-
-    return jsonify({"error": "Invalid credentials"}), 401  # Unauthorized
-
 
 if __name__ == '__main__':
     app.run(debug=True)

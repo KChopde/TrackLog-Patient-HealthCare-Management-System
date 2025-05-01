@@ -4,6 +4,7 @@ import { Link, useNavigate} from 'react-router-dom';
 import api from './Api';
 
 function Dashboard() {
+  const [email, SetEmail] = useState("");
   const [patients, setPatients] = useState([]);
   const [diseaseFilter, setDiseaseFilter] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
@@ -11,6 +12,16 @@ function Dashboard() {
   const [availableDiseases, setAvailableDiseases] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]); // State for filtered patients
   const [deletedPatient, setDeletedPatient] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentPatients = filteredPatients.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredPatients.length / recordsPerPage);
 
   // Define categories and their diseases
   const diseaseCategories = {
@@ -48,6 +59,11 @@ function Dashboard() {
     }
   }, [selectedCategory]);
 
+  //get username from local storage
+  useEffect(() => {
+    const savedUsername = localStorage.getItem("email");
+    if (savedUsername) SetEmail(savedUsername);
+  }, []);
 
   const fetchPatients = () => {
     api.get("/patients")
@@ -81,10 +97,11 @@ function Dashboard() {
   const handleDiseaseFilterChange = (e) => setDiseaseFilter(e.target.value);
   const handleAgeFilterChange = (e) => setAgeFilter(e.target.value);
 
+  //locally filtering logic
   const applyFilters = () => {
     const newFilteredPatients = patients.filter(patient => {
       const matchesDisease = diseaseFilter ? patient.disease === diseaseFilter : true;
-      const matchesAge = ageFilter ? patient.age >= ageFilter : true;
+      const matchesAge = ageFilter ? patient.age = ageFilter : true;
       return matchesDisease && matchesAge;
     });
     setFilteredPatients(newFilteredPatients);  // Set filtered patients
@@ -96,9 +113,15 @@ function Dashboard() {
     navigate("/login"); // Redirect to login page
   };
   
+ 
   return (
     <div>
       <h1>Patient Dashboard</h1>
+      <div style={{ padding: "1rem" }}>
+      <div style={{ textAlign: "left", fontSize: "1.2rem", fontWeight: "bold" }}>
+      <p style={{textAlign:"left"}}>Welcome, {email+"!" || "Guest"}</p>
+      </div>
+      </div>   
       {/* Filters */}
       <div class="categorydiv">
         {/* Category Dropdown */}
@@ -115,17 +138,26 @@ function Dashboard() {
         {/* Disease Dropdown */}
         <label>
           Disease:
-          <select value={diseaseFilter} onChange={handleDiseaseFilterChange} disabled={!selectedCategory}>
+          {/* <select value={diseaseFilter} onChange={handleDiseaseFilterChange} disabled={!selectedCategory}>
             <option value="">All Diseases</option>
             {availableDiseases.map((disease, index) => (
               <option key={index} value={disease}>{disease}</option>
             ))}
+          </select> */}
+          <select value={diseaseFilter} onChange={handleDiseaseFilterChange} disabled={!selectedCategory}>
+           <option value="">Select Disease</option>
+            {selectedCategory &&
+            diseaseCategories[selectedCategory].map((disease, index) => (
+              <option key={index} value={disease}>{disease}</option>
+              ))
+             }
           </select>
+
         </label>
 
         {/* Age Filter */}
         <label>
-          Age (greater than or equal to):
+          Age:
           <input 
             type="number" 
             value={ageFilter} 
@@ -133,10 +165,11 @@ function Dashboard() {
             placeholder="Age"
           />
         </label>
-      </div>
-
+      </div>        
+   
       {/* Display Button */}
-      <button onClick={applyFilters}>Display</button>
+      <button onClick={applyFilters}>Display/Filter</button>
+  
       {/* Logout Button */}
       <button onClick={handleLogout} style={{ position:'absolute' ,float: "right", margin: "10px",top:"20px",right:"20px" }}>Logout</button>
             
@@ -147,6 +180,9 @@ function Dashboard() {
                     🗑️ Patient <strong>{deletedPatient.name}</strong> was deleted.
                 </div>
                   )}
+         <button onClick={() => navigate('/mapreduce')} style={{right:"90px"}}>
+        View Analytics
+      </button>
 
       {/* Patient List Table */}
       <table class="displaytabulardata">
@@ -161,12 +197,12 @@ function Dashboard() {
           </tr>
         </thead>
         <tbody>
-          {filteredPatients.map(patient => (
+          {currentPatients.map(patient => (
             <tr key={patient._id}>
               <td>{patient.name}</td>
               <td>{patient.age}</td>
               <td>{patient.disease}</td>
-              <td>{new Date(patient.admission_date).toLocaleDateString()}</td>
+              <td>{new Date(patient.admission_date).toLocaleDateString('en-US')}</td>
               <td>
               <Link to={`/patient/${patient._id}`}>
                 <button>View History</button>
@@ -182,6 +218,100 @@ function Dashboard() {
           ))}
         </tbody>
       </table>
+
+      {/* <div style={{ marginTop: "20px" }}>
+  {Array.from({ length: totalPages }, (_, index) => (
+    <button
+      key={index}
+      onClick={() => setCurrentPage(index + 1)}
+      disabled={currentPage === index + 1}
+      style={{
+        margin: "0 5px",
+        padding: "5px 10px",
+        backgroundColor: currentPage === index + 1 ? "#007bff" : "#f0f0f0",
+        color: currentPage === index + 1 ? "#fff" : "#000",
+        border: "none",
+        borderRadius: "4px"
+      }}
+    >
+      {index + 1}
+    </button>
+  ))}
+</div> */}
+<div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+  {/* Prev Button */}
+  <button
+    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+    disabled={currentPage === 1}
+    style={{ margin: "0 5px" }}
+  >
+    « Prev
+  </button>
+
+  {/* Page 1 */}
+  <button
+    onClick={() => setCurrentPage(1)}
+    disabled={currentPage === 1}
+    style={{ margin: "0 5px" }}
+  >
+    1
+  </button>
+
+  {/* Page 2 & 3 (if needed) */}
+  {currentPage > 1 && currentPage < totalPages - 1 && (
+    <>
+      <button
+        onClick={() => setCurrentPage(currentPage - 1)}
+        style={{ margin: "0 5px" }}
+      >
+        {currentPage - 1}
+      </button>
+      <button
+        disabled
+        style={{
+          margin: "0 5px",
+          backgroundColor: "#007bff",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px"
+        }}
+      >
+        {currentPage}
+      </button>
+      <button
+        onClick={() => setCurrentPage(currentPage + 1)}
+        style={{ margin: "0 5px" }}
+      >
+        {currentPage + 1}
+      </button>
+    </>
+  )}
+
+  {/* Ellipsis if far from last */}
+  {currentPage < totalPages - 2 && <span style={{ margin: "0 5px" }}>...</span>}
+
+  {/* Last Page */}
+  {totalPages > 1 && (
+    <button
+      onClick={() => setCurrentPage(totalPages)}
+      disabled={currentPage === totalPages}
+      style={{ margin: "0 5px" }}
+    >
+      {totalPages}
+    </button>
+  )}
+
+  {/* Next Button */}
+  <button
+    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+    disabled={currentPage === totalPages}
+    style={{ margin: "0 5px" }}
+  >
+    Next »
+  </button>
+</div>
+
+
     </div>
   );
 }

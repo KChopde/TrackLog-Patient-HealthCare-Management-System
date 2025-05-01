@@ -78,14 +78,14 @@ body {
   
   button {
     width: 15%;
-    padding: 12px;
+    padding: 10px;
     background-color: #425e7b;
     color: white;
     font-size: 15px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    margin-left: 30%;
+    margin-left: 20%;
     margin-right: 5px;
     text-align: center;
     width:fit-content;

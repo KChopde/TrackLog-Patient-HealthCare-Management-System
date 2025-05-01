@@ -2,7 +2,6 @@
   "name": "healthcare-patient-management",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://kchopde.github.io/TrackLog-Patient-HealthCare-Management-System/",
   "dependencies": {
     "axios": "^1.8.1",
     "cra-template": "1.2.0",

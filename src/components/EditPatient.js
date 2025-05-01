@@ -13,7 +13,14 @@ function EditPatient() {
     // Fetch patient data based on the patient id from the URL
     api.get(`/patients/${id}`)
       .then(response => {
-        setPatient(response.data);  // Update state with the fetched patient data
+        //setPatient(response.data);  // Update state with the fetched patient data
+        const data=response.data
+        // Only convert if it's truly malformed — otherwise keep the original
+      if (!Array.isArray(data.medical_history) && typeof data.medical_history !== 'string') {
+        data.medical_history = '';
+      }
+
+        setPatient(data);
       })
       .catch(error => {
         console.error("Error fetching patient data:", error);  // Log any error that occurs
@@ -69,14 +76,15 @@ function EditPatient() {
         <input type="date" name="admission_date" value={patient.admission_date} onChange={handleChange} required />
         
         <label>Medical History (Comma Separated):</label>
-        <input  type="text" 
+        <textarea
                 name="medical_history" 
-                value={Array.isArray(patient.medical_history)?patient.medical_history.join(','):" "} 
-                onChange={(e) => 
-                  handleChange({ 
-                    target: { 
-                      name: 'medical_history', 
-                      value: e.target.value.split(',') } })} />
+                //value={Array.isArray(patient.medical_history)?patient.medical_history.join(', '):" "} 
+                value={
+                  Array.isArray(patient.medical_history)
+                  ? patient.medical_history.join(', ')
+                  : patient.medical_history || ''
+                }
+                onChange={handleChange} />
         
         <button type="submit">Update Patient</button>
         {message && <p style={{ color: "green", fontWeight: "bold" }}>{message}</p>}

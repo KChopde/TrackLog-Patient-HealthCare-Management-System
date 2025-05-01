@@ -25,16 +25,29 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Create User
+# @app.post("/register")
+# async def register(username: str, password: str):
+#     hashed_password = pwd_context.hash(password)
+#     user = {"username": username, "password": hashed_password}
+#     users_collection.insert_one(user)
+#     return {"message": "User registered successfully"}
+
 @app.post("/register")
-async def register(username: str, password: str):
+def register(username: str, password: str):
+    # Check if the username already exists
+    print(f"username : {username}")
+    if users_collection.find_one({"username": username}):
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
     hashed_password = pwd_context.hash(password)
     user = {"username": username, "password": hashed_password}
     users_collection.insert_one(user)
+    
     return {"message": "User registered successfully"}
 
 # Generate JWT Token
 @app.post("/token")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = users_collection.find_one({"username": form_data.username})
     if not user or not pwd_context.verify(form_data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")

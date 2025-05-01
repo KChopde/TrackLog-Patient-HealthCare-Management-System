@@ -1,45 +1,59 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+// components/Login.js
+import React, { useState } from 'react';
+import { useNavigate, Link} from 'react-router-dom';
 import api from './Api';
 
-
-const Login = ({ setToken }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+function Login({ setToken }) {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post("/token", new URLSearchParams({
-        username,
-        password
-      }), {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" }
-      });
+      const res = await api.post('auth/token', { username: email, password });  // Send email as 'username'
+      
+      const { access_token, email: userEmail } = res.data;  // Destructure email and token from the response
+      if (access_token && userEmail) {
+        // Store token and email in localStorage
+        localStorage.setItem('access_token', access_token);
+        localStorage.setItem('email', userEmail);  // Store email instead of username
+      }
 
-      setToken(response.data.access_token);
-      localStorage.setItem("token", response.data.access_token);
-      localStorage.setItem("username", username);  // Save username in localStorage
-      navigate("/"); //redirect to dashboard page after login  
-    } catch (error) {
-      setError("Invalid credentials");
+      setToken(access_token);
+      navigate('/');  // Navigate to the home page or dashboard
+    } catch (err) {
+      setError("Invalid credentials. Please try again.");
     }
-  };
-
+};
   return (
     <div>
       <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          required
+          onChange={e => setEmail(e.target.value)}
+        /><br/>
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          required
+          onChange={e => setPassword(e.target.value)}
+        /><br/>
         <button type="submit">Login</button>
       </form>
+      <p style={{textAlign:"center"}}>
+        Don’t have an account? <Link to="/register" style={{padding:"20px"}}>Register here</Link>
+      </p>
     </div>
   );
-};
+}
 
 export default Login;

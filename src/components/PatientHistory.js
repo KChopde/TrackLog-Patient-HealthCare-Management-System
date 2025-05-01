@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import api from './Api';
 
 function PatientHistory() {
   const { id } = useParams();
@@ -11,7 +12,7 @@ function PatientHistory() {
 
   useEffect(() => {
     if (id && id.length === 24) {  // Ensure valid MongoDB ObjectId length
-      axios.get(`/patient/${id}`)
+      api.get(`/patient/${id}`)
         .then(response => {
           setPatient(response.data);  // ✅ Set state with patient data
           setLoading(false);
