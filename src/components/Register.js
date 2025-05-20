@@ -12,7 +12,7 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const response = await api.post('/auth/register', { email: email, password: password }, 
+      const response = await api.post('/auth/register', { email, password }, 
         { headers: { "Content-Type": "application/json" } }
       );
 
