@@ -8,28 +8,36 @@ from bson import ObjectId, errors
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from auth_routes import auth_bp
-
+from pymongo import MongoClient
 
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000","https://kchopde.github.io","*","http://localhost:3001", "http://localhost:*"])
-#CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+
  # Enable CORS for frontend-backend communication
-
 PORT = int(os.environ.get("PORT", 5000))  # Render injects PORT env var
-#app.run(host="0.0.0.0", port=PORT, debug=True)
 
-# MongoDB connection URI (localhost or MongoDB Atlas)
-app.config["MONGO_URI"] = "mongodb://localhost:27017/healthcare_db"
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
-mongo = PyMongo(app)
+ENV = os.getenv("FLASK_ENV", "development")
+
+if ENV == "production":
+    app.config["MONGO_URI"] = os.getenv("MONGO_URI_PROD")
+else:
+    app.config["MONGO_URI"] = os.getenv("MONGO_URI_DEV")
+
+#mongo = PyMongo(app)
+
 fake = Faker()
 
-# Collection reference
-patients_collection = mongo.db.patients
+client = MongoClient(app.config["MONGO_URI"])
+db = client["healthcare_db"]  # 👈 explicitly specify the database
+patients_collection = db["patients"]
 
-users_collection = mongo.db.users
+# Collection reference
+
+# patients_collection = mongo.db.patients
+#users_collection = mongo.db.users
 
 
 # List of medical conditions, diagnoses, and symptoms
