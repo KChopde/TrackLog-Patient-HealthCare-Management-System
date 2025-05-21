@@ -39,7 +39,7 @@ Built with React, Flask, and MongoDB, it supports secure user registration/login
 
 Use this URL to view project:
 [deployement url](https://kchopde.github.io/TrackLog-Patient-HealthCare-Management-System/)
-
+(It take 15 sec time approx to load all records)
 
 **Developed by Kanchan Chopde**
 📧 kanchan.chopde@wayne.edu
