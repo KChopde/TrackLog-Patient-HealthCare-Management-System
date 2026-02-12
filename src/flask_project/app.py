@@ -159,15 +159,18 @@ def get_patients():
 @app.route('/patients/<id>', methods=['GET'])
 def get_patient(id):
     try:
-        patient = patients_collection.find_one({"_id": ObjectId(id)})  # Fetch the patient using the updated function
+        if not ObjectId.is_valid(id):
+            return jsonify({"error": "Invalid Patient ID"}), 400
+
+        patient = patients_collection.find_one({"_id": ObjectId(id)})
         if patient:
-            return jsonify(patient)
+            return jsonify(patient_data(patient))
         else:
             return jsonify({'message': 'Patient not found'}), 404
-    except Exception as e:
-        return jsonify({'message': f'Error fetching patient: {str(e)}'}), 500
     except errors.InvalidId:
         return jsonify({"error": "Invalid ObjectId format"}), 400
+    except Exception as e:
+        return jsonify({'message': f'Error fetching patient: {str(e)}'}), 500
 
 
 # Add a new patient
